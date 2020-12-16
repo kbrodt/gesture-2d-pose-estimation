@@ -1,6 +1,6 @@
 import urllib
-from textwrap import dedent
 from pathlib import Path
+from textwrap import dedent
 
 import cv2
 import PIL.Image as Image
@@ -10,13 +10,17 @@ import streamlit as st
 from utils import get_final_preds, get_input, put_kps
 
 st.set_page_config(layout="wide")
-ROOT = Path(".") / "assets"
+
+ROOT_PATH = Path(".")
+ASSETS_PATH = ROOT_PATH / "assets"
 DESIRED_SIZE = 512
-DEFAULT_IMG_URL_PATH = (
+DEFAULT_IMG_FILEPATH = ASSETS_PATH / "test.png"
+DEFAULT_IMG_URLPATH = (
     "https://drawpaintacademy.com/wp-content/uploads/2018/05/Michelangelo.jpg"
 )
-URL_MODEL = (
-    'https://github.com/kbrodt/gesture-2d-pose-estimation/releases/download/v0.1/model_best.onnx'
+MODEL_FILEPATH = ASSETS_PATH / "model_best.onnx"
+MODEL_URLPATH = (
+    f"https://github.com/kbrodt/gesture-2d-pose-estimation/releases/download/v0.1/{MODEL_FILEPATH.name}"
 )
 
 
@@ -44,19 +48,17 @@ def readme():
     """))
 
     st.sidebar.subheader("Author")
-    st.sidebar.write(
-        "Kirill Brodt"
-    )
+    st.sidebar.write("Kirill Brodt")
 
 
 @st.cache
 def process_image(img_raw):
-    pose_input, img, center, scale = get_input(img_raw)
-    path_to_model = ROOT / "model_best.onnx" 
-    if not path_to_model.exists():
-        urllib.request.urlretrieve(URL_MODEL, path_to_model)
+    if not MODEL_FILEPATH.exists():
+        urllib.request.urlretrieve(MODEL_URLPATH, MODEL_FILEPATH)
 
-    model = cv2.dnn.readNetFromONNX(str(path_to_model))
+    model = cv2.dnn.readNetFromONNX(str(MODEL_FILEPATH))
+
+    pose_input, img, center, scale = get_input(img_raw)
     model.setInput(pose_input[None])
     predicted_heatmap = model.forward()
     predicted_keypoints, confidence = get_final_preds(
@@ -95,14 +97,14 @@ def main():
 
     inp = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
     if inp is None:
-        st.warning("No file selected.")
-        with open(ROOT / "test.png", "br") as inp2:
-            img_raw = inp2.read()
+        st.warning("No file selected. Using default.")
+        with open(DEFAULT_IMG_FILEPATH, "br") as inp:
+            img_raw = inp.read()
     else:
         img_raw = inp.read()
 
     if st.checkbox("or put URL"):
-        url = st.text_input("The URL link", value=DEFAULT_IMG_URL_PATH)
+        url = st.text_input("The URL link", value=DEFAULT_IMG_URLPATH)
         if url != "":
             img_raw = requests.get(url).content
 
