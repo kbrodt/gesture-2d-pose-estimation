@@ -14,7 +14,9 @@ DESIRED_SIZE = 512
 DEFAULT_IMG_URL_PATH = (
     "https://drawpaintacademy.com/wp-content/uploads/2018/05/Michelangelo.jpg"
 )
-URL_MODEL = ''
+URL_MODEL = (
+    'https://github.com/kbrodt/gesture-2d-pose-estimation/releases/download/v0.1/model_best.onnx'
+)
 
 
 @st.cache
