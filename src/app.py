@@ -37,7 +37,7 @@ def readme():
         and the corresponding value contains XY coordinates and the confidence.
     """))
 
-    st.sidebar.subheader("Restrictions")
+    st.sidebar.subheader("Limitataions")
     st.sidebar.write(dedent("""\
         The model supports only one character per image.
         The character must be full length and located in the middle.
@@ -101,7 +101,7 @@ def main():
     else:
         img_raw = inp.read()
 
-    if st.checkbox("or use URL"):
+    if st.checkbox("or put URL"):
         url = st.text_input("The URL link", value=DEFAULT_IMG_URL_PATH)
         if url != "":
             img_raw = requests.get(url).content
