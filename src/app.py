@@ -1,4 +1,5 @@
 import urllib
+from textwrap import dedent
 from pathlib import Path
 
 import cv2
@@ -17,6 +18,35 @@ DEFAULT_IMG_URL_PATH = (
 URL_MODEL = (
     'https://github.com/kbrodt/gesture-2d-pose-estimation/releases/download/v0.1/model_best.onnx'
 )
+
+
+def readme():
+    st.sidebar.title("2D Pose Estimation for sketches with human-like characters")
+
+    st.sidebar.subheader("Overview")
+    st.sidebar.write(dedent("""\
+        Simple 2D Pose Estimation model for gesture drawings and sketches with
+        human-like characters. The model trained on images with gesture drawings
+        with corresponding skeletons consisting of 16 two-dimensional labels.
+    """))
+
+    st.sidebar.subheader("Usage")
+    st.sidebar.write(dedent("""\
+        Upload an image or put an URL and immediately get the results. You also
+        can copy the key-points in JSON format, where each key is a joint name,
+        and the corresponding value contains XY coordinates and the confidence.
+    """))
+
+    st.sidebar.subheader("Restrictions")
+    st.sidebar.write(dedent("""\
+        The model supports only one character per image.
+        The character must be full length and located in the middle.
+    """))
+
+    st.sidebar.subheader("Author")
+    st.sidebar.write(
+        "Kirill Brodt"
+    )
 
 
 @st.cache
@@ -61,7 +91,7 @@ def process_image(img_raw):
 
 
 def main():
-    st.title("2D pose estimation for sketches with human-like characters")
+    readme()
 
     inp = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
     if inp is None:
@@ -71,14 +101,14 @@ def main():
     else:
         img_raw = inp.read()
 
-    if st.checkbox("or use url"):
+    if st.checkbox("or use URL"):
         url = st.text_input("The URL link", value=DEFAULT_IMG_URL_PATH)
         if url != "":
             img_raw = requests.get(url).content
 
     img, predicted_keypoints, confidence, predicted_heatmap = process_image(img_raw)
 
-    thresh = st.slider("Confidence", 0.0, 1.0, value=0.0, step=0.05)
+    thresh = st.slider("Confidence threshold", 0.0, 1.0, value=0.0, step=0.05)
     img_with_keyponts, kps_json = put_kps(
         img, predicted_keypoints, confidence, thresh=thresh
     )
@@ -90,11 +120,6 @@ def main():
             predicted_heatmap,
         ],
         caption=["original", "annotated", "heatmap"],
-    )
-
-    st.write(
-        "Model supports only one character per image. "
-        "The character must be full length and be located in the middle."
     )
 
     if st.checkbox("Show keypoints in json format {'JOINT_NAME': [x, y, confidence]}"):
